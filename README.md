@@ -1,4 +1,4 @@
-##Soil Moisture Retention Curve (SMRC)
+## Soil Moisture Retention Curve (SMRC)
 
 **run in cmd:** 
 
