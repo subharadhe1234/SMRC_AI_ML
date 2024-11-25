@@ -18,10 +18,19 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import os
+from tensorflow import keras
+from tensorflow.keras import backend as K
 
+def r2_score_metric(y_true, y_pred):
+    """
+    Custom R² score metric for Keras.
+    """
+    ss_res = K.sum(K.square(y_true - y_pred))  # Residual sum of squares
+    ss_tot = K.sum(K.square(y_true - K.mean(y_true)))  # Total sum of squares
+    return 1 - ss_res / (ss_tot + K.epsilon())
 
 class MultiRegressor:
-    def __init__(self, model_type='decision_tree', alpha=1.0, degree=2):
+    def __init__(self, model_type='decision_tree', alpha=1.0, degree=2,epochs=20):
         """
         Initializes the model with StandardScaler for feature scaling and selected regression model.
         :param model_type: String representing the type of model to use ('decision_tree', 'random_forest',
@@ -33,6 +42,7 @@ class MultiRegressor:
         self.sc_y = StandardScaler()
         self.model_type = model_type
         self.degree = degree
+        self.epochs=epochs
 
         if model_type == 'decision_tree':
             self.model =  DecisionTreeRegressor(
@@ -69,6 +79,14 @@ class MultiRegressor:
         elif model_type == 'polynomial':
             self.poly = PolynomialFeatures(degree=self.degree)
             self.model = LinearRegression()
+        elif model_type=='ann':
+            self.model=keras.Sequential([
+            keras.layers.Dense(70, input_dim=1, activation='relu'),
+            keras.layers.Dense(40, activation='relu'),
+            keras.layers.Dense(10, activation='relu'),
+            keras.layers.Dense(1, activation='linear')
+            ])
+            self.model.compile(loss='mean_squared_error', optimizer="adam", metrics=['mae',r2_score_metric])
         else:
             raise ValueError("Invalid model_type. Choose from ['decision_tree', 'random_forest', 'svm', 'ridge', 'lasso', 'linear', 'polynomial']")
 
@@ -82,6 +100,8 @@ class MultiRegressor:
         if self.model_type == 'polynomial':
             X_poly = self.poly.fit_transform(X)
             self.model.fit(X_poly, y)
+        elif self.model_type == 'ann':
+            self.model.fit(X,y,epochs=self.epochs)
         else:
             self.model.fit(X, y.ravel())
 
