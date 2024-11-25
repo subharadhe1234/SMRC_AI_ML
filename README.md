@@ -4,6 +4,6 @@
 
 git clone https://github.com/subharadhe1234/SMRC_AI_ML.git
 
-cd soil-moisture-retention-curve-AI_ml-
+cd SMRC_AI_ML 
 
 python run.py   
